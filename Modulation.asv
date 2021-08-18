@@ -11,9 +11,18 @@ bitsPerFrame = 1024;
 %% Symbols per frame
 symPerFrame = bitsPerFrame/bps;
 
-% Generate random bits
-%txSig = randi([0,1],bitsPerFrame,1);
+%% Generate random bits
 txSig = randi([0 M-1],bitsPerFrame,1);
+x = txSig;
+%% Modulate Signal
+txSig = qammod(txSig,M);
+
+%% Setting Constellation Diagram object
+cpts = qammod(0:M-1,M);
+constDiag = comm.ConstellationDiagram('ReferenceConstellation',cpts, ...
+    'XLimits',[-4 4],'YLimits',[-4 4]);
+
+%constDiag(txSig)
 
 %% Pulse Shaping Tx Filter
 % Tx and Rx raised cosine filter
@@ -26,7 +35,7 @@ txFilter = comm.RaisedCosineTransmitFilter(...
     'OutputSamplesPerSymbol',bps);
 
 % Plotting the impulse response of the htxFilter
-fvtool(txFilter,'impulse');
+%fvtool(txFilter,'impulse');
 
 % Calculate the delay through the matched filters. The group delay is half of the filter span through 
 % one filter and is, therefore, equal to the filter span for both filters. Multiply by the number of bits 
@@ -55,7 +64,7 @@ rayChan = comm.RayleighChannel(...
 txSig = rayChan(txSig); 
 
 % Additive White Gaussian Noise
-SNR = 10 % Will be varied
+SNR = 10; % Will be varied
 txSig = awgn(txSig, SNR);
 
 %% Pulse Shaping Rx Filter
@@ -69,14 +78,21 @@ rxFilter = comm.RaisedCosineReceiveFilter(...
 txSig = rxFilter(txSig);
 
 %% Equalization
-lineq = comm.LinearEqualizer('Algorithm','CMA', ...
-    'NumTaps',5,'ReferenceTap',3, ...
-    'StepSize',0.03,'AdaptWeightsSource','Input port')
+%lineq = comm.LinearEqualizer('Algorithm','CMA', ...
+%    'NumTaps',5,'ReferenceTap',3, ...
+%    'StepSize',0.03,'AdaptWeightsSource','Input port')
 
-[y,err,wts] = lineq(txSig,adaptWeights)
+%[y,err,wts] = lineq(txSig,adaptWeights)
 %% Feature Extraction
 
 %% Training Classifier
 
 %% Testing Classifier
+
+%% Demodulation
+z = qamdemod(txSig,M);
+[num,rt] = symerr(x,z)
+
+% Constellation Diagram
+%constDiag(z)
 
