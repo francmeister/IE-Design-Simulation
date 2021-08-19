@@ -1,6 +1,8 @@
-function [f1 f2 f3 f4 f5] = extractFeatures(rxSig) 
+%rxSig = [3 3 3 3 4 6 7 7 7]
+%[a b c d e] = extractFeatures(rxSig)
+function [f1 f2 f3 f4 f5] = feature_extraction(rxSig) 
     %% maximum value of the spectral power density of the normalised-centred instantaneous amplitude 
-    N = length(rxSig)
+    N = length(rxSig);
     m_a = sum(rxSig)/N;
     a_n = rxSig/m_a;
     a_cn = a_n - 1;
