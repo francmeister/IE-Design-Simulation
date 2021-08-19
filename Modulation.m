@@ -1,14 +1,17 @@
-txSig = modulation('QAM', 16)
-[f1 f2 f3 f4 f5] = feature_extraction(txSig)
-
 %% Collect features to be extracted into matrices
+global gamma_max delta_aa kurtosis C_20 C_40 mod_type
 gamma_max = [];
 delta_aa = [];
 kurtosis = [];
 C_20 = [];
 C_40 = [];
-mod_type = [];
+mod_type = {};
 
+%%
+txSig = modulation('QAM', 16);
+[f1 f2 f3 f4 f5] = feature_extraction(txSig);
+populatesampleData(20)
+showStatistics()
 function txSig = modulation(modType, modOrder)
     %% Modulation order
     M = modOrder;
@@ -102,16 +105,12 @@ function txSig = modulation(modType, modOrder)
     %[y,err,wts] = lineq(txSig,adaptWeights)
 end
 %% Feature Extraction
-[a b c d e] = feature_extraction(txSig)
+
 %% Training Classifier
 
 %% Testing Classifier
 
 %% Demodulation
-
-z = qamdemod(txSig,M);
-txSig;
-[num,rt] = symerr(x,z)
 
 % Constellation Diagram
 %constDiag(z)
@@ -142,55 +141,78 @@ function [f1 f2 f3 f4 f5] = feature_extraction(rxSig)
     f5 = C_40;
 end
 
-function groupTrainData(f1,f2,f3,f4,f5,modType)
-    gamma_max = [gamma_max f1];
-    delta_aa = [delta_aa f2];
-    kurtosis = [kurtosis f3];
-    C_20 = [C_20 f4];
-    C_40 = [C_40 f5];
-    mod_type = [mod_type modType];
+function groupsampleData(f1,f2,f3,f4,f5,modType)
+    global gamma_max delta_aa kurtosis C_20 C_40 mod_type
+    gamma_max = [gamma_max;f1];
+    delta_aa = [delta_aa;f2];
+    kurtosis = [kurtosis;f3];
+    C_20 = [C_20;f4];
+    C_40 = [C_40;f5];
+    mod_type = [mod_type;modType];
 end
 
 function saveToFile()
+    global gamma_max delta_aa kurtosis C_20 C_40 mod_type
     sampleData = table(gamma_max,delta_aa,kurtosis,C_20,C_40,mod_type);
     save 'sampleData.mat' sampleData, '-append';
 end
 
-function populateTrainData(num_of_frames)
+function populatesampleData(num_of_frames)
     for loop = 1:num_of_frames
         % 4-QAM
         modType = '4-QAM'; 
         txSig = modulation('QAM', 4);
         [f1 f2 f3 f4 f5] = feature_extraction(txSig);
-        [gamma_max, delta_aa, kurtosis, C_20, C_40, mod_type] = groupTrainData(f1,f2,f3,f4,f5,modType);
+        groupsampleData(f1,f2,f3,f4,f5,modType);
         
         % 8-QAM
         modType = '8-QAM'; 
         txSig = modulation('QAM', 8);
         [f1 f2 f3 f4 f5] = feature_extraction(txSig);
-        [gamma_max, delta_aa, kurtosis, C_20, C_40, mod_type] = groupTrainData(f1,f2,f3,f4,f5,modType);
+        groupsampleData(f1,f2,f3,f4,f5,modType);
         
         % 16-QAM
         modType = '16-QAM'; 
         txSig = modulation('QAM', 16);
         [f1 f2 f3 f4 f5] = feature_extraction(txSig);
-        [gamma_max, delta_aa, kurtosis, C_20, C_40, mod_type] = groupTrainData(f1,f2,f3,f4,f5,modType);
+        groupsampleData(f1,f2,f3,f4,f5,modType);
         
         % 4-PSK
         modType = '4-PSK'; 
         txSig = modulation('PSK', 4);
         [f1 f2 f3 f4 f5] = feature_extraction(txSig);
-        [gamma_max, delta_aa, kurtosis, C_20, C_40, mod_type] = groupTrainData(f1,f2,f3,f4,f5,modType);
+        groupsampleData(f1,f2,f3,f4,f5,modType);
         
+        % 8-PSK
         modType = '8-PSK'; 
         txSig = modulation('PSK', 8);
         [f1 f2 f3 f4 f5] = feature_extraction(txSig);
-        [gamma_max, delta_aa, kurtosis, C_20, C_40, mod_type] = groupTrainData(f1,f2,f3,f4,f5,modType);
+        groupsampleData(f1,f2,f3,f4,f5,modType);
         
+        % 16-PSK
         modType = '16-PSK'; 
         txSig = modulation('PSK', 16);
         [f1 f2 f3 f4 f5] = feature_extraction(txSig);
-        [gamma_max, delta_aa, kurtosis, C_20, C_40, mod_type] = groupTrainData(f1,f2,f3,f4,f5,modType);
+        groupsampleData(f1,f2,f3,f4,f5,modType);
     end
     saveToFile();
+end
+
+function showStatistics()
+    load('sampleData.mat')
+    
+
+    % Make a histogram of known modulation types
+    %histogram(sampleData.mod_type)
+
+    % boxplot -  a simple way to visualize multiple distributions. This creates a plot where the boxes represent 
+    % the distribution of the values of x for each of the classes in c. If the values of x are typically significantly 
+    % different for one class than another, then x is a feature that can distinguish between those classes. The more 
+    % features you have that can distinguish different classes, the more likely you are to be able to build an accurate 
+    % classification model from the full data set.
+    boxplot(sampleData.gamma_max,sampleData.mod_type)
+    %boxplot(sampleData.delta_aa,sampleData.mod_type)
+    %boxplot(sampleData.kurtosis,sampleData.mod_type)
+    %boxplot(sampleData.C_20,sampleData.mod_type)
+    %boxplot(sampleData.C_40,sampleData.mod_type)
 end
