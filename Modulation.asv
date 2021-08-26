@@ -1,5 +1,5 @@
 %% Collect features to be extracted into matrices
-global gamma_max delta_aa delta_a delta_ap delta_dp kurtosis C_20 C_40 mod_type symPerFrame
+global gamma_max delta_aa kurtosis C_20 C_40 mod_type symPerFrame delta_a delta_ap delta_dp
 gamma_max = [];
 delta_aa = [];
 delta_a = [];
@@ -12,7 +12,7 @@ mod_type = {};
 
 %% Define number of symbols per frame  
 symPerFrame = 1024;
-populatesampleData(25)
+populatesampleData(200)
 showStatistics()
 
 %M = 16;
@@ -119,7 +119,7 @@ function txSig = modulation(modType, modOrder, txSig, trainingSymbols)
     %[num,rt] = symerr(x,z)
 end
 
-function [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(rxSig) 
+function [f1 f2 f3 f4 f5] = feature_extraction(rxSig) 
     %% maximum value of the spectral power density of the normalised-centred instantaneous amplitude 
     N = length(rxSig);
     m_a = sum(rxSig)/N;
@@ -138,32 +138,32 @@ function [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(rxSig)
     A = sum(a_cn.^2)/N;
     B = (sum(a_cn)/N).^2;
     delta_a = sqrt(A-B);
-    f3 = abs(delta_a);
+    %f3 = abs(delta_a);
     
     %% standard deviation of the absolute value of the non-linear component of the instantaneous phase
     A = sum((angle(rxSig)).^2)/N;
     B = (sum(abs(angle(rxSig)))/N).^2;
     delta_ap = sqrt(A-B);
-    f4 = delta_ap;
+    %f4 = delta_ap;
     
     %% standard deviation of the non-linear component of the direct instantaneous phase
     A = sum((angle(rxSig)).^2)/N;
     B = (sum(angle(rxSig))/N).^2;
     delta_dp = sqrt(A-B);
-    f5 = delta_dp;
+    %f5 = delta_dp;
     
     %% kurtosis of the normalized and centred instantaneous amplitude
     k = kurtosis(a_cn);
-    f6 = abs(k);
+    f3 = abs(k);
     
     %% High order cumulant features
     C_20 = sum(rxSig.^2)/N;
     C_40 = sum(rxSig.^4)/N - 3*C_20;
-    f7 = abs(C_20);
-    f8 = abs(C_40);
+    f4 = abs(C_20);
+    f5 = abs(C_40);
 end
 
-function groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType)
+function groupsampleData(f1,f2,f3,f4,f5,modType)
     global gamma_max delta_aa delta_a delta_ap delta_dp kurtosis C_20 C_40 mod_type
     gamma_max = [gamma_max;f1];
     delta_aa = [delta_aa;f2];
@@ -178,7 +178,7 @@ end
 
 function saveToFile()
     global gamma_max delta_aa delta_a delta_ap delta_dp kurtosis C_20 C_40 mod_type
-    sampleData = table(gamma_max,delta_aa,delta_a,delta_ap,delta_dp,kurtosis,C_20,C_40,mod_type);
+    sampleData = table(gamma_max,delta_aa,kurtosis,C_20,C_40,mod_type);
     save 'sampleData.mat' sampleData, '-append';
 end
 
@@ -199,42 +199,42 @@ function populatesampleData(num_of_frames)
         M = 4;
         signal = generateSignal(M, symPerFrame);
         txSig = modulation('QAM', M, signal, trainingSymbols_4qam);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
-        groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
+        [f1 f2 f3 f4 f5] = feature_extraction(txSig);
+        groupsampleData(f1,f2,f3,f4,f5,modType);
         
         % 4-PSK
         modType = '4-PSK'; 
         txSig = modulation('PSK', 4, signal, trainingSymbols_4psk);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
-        groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
+        [f1 f2 f3 f4 f5] = feature_extraction(txSig);
+        groupsampleData(f1,f2,f3,f4,f5,modType);
         
         % 8-QAM
         modType = '8-QAM'; 
         M = 8;
         signal = generateSignal(M, symPerFrame);
         txSig = modulation('QAM', 8, signal, trainingSymbols_8qam);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
-        groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
+        [f1 f2 f3 f4 f5] = feature_extraction(txSig);
+        groupsampleData(f1,f2,f3,f4,f5,modType);
         
         % 8-PSK
         modType = '8-PSK'; 
         txSig = modulation('PSK', 8, signal, trainingSymbols_8psk);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
-        groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
+        [f1 f2 f3 f4 f5] = feature_extraction(txSig);
+        groupsampleData(f1,f2,f3,f4,f5,modType);
         
         % 16-QAM
         modType = '16-QAM'; 
         M = 16;
         signal = generateSignal(M, symPerFrame);
         txSig = modulation('QAM', 16, signal, trainingSymbols_16qam);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
-        groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
+        [f1 f2 f3 f4 f5] = feature_extraction(txSig);
+       groupsampleData(f1,f2,f3,f4,f5,modType);
                         
         % 16-PSK
         modType = '16-PSK'; 
         txSig = modulation('PSK', 16, signal, trainingSymbols_16psk);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
-        groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
+        [f1 f2 f3 f4 f5] = feature_extraction(txSig);
+        groupsampleData(f1,f2,f3,f4,f5,modType);
     end
     saveToFile();
 end

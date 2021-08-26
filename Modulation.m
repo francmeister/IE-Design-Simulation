@@ -1,5 +1,5 @@
 %% Collect features to be extracted into matrices
-global gamma_max delta_aa delta_a delta_ap delta_dp kurtosis C_20 C_40 mod_type symPerFrame
+global gamma_max delta_aa kurtosis C_20 C_40 mod_type symPerFrame delta_a delta_ap delta_dp
 gamma_max = [];
 delta_aa = [];
 delta_a = [];
@@ -12,7 +12,7 @@ mod_type = {};
 
 %% Define number of symbols per frame  
 symPerFrame = 1024;
-populatesampleData(10)
+populatesampleData(40)
 showStatistics()
 
 %M = 16;
@@ -70,7 +70,7 @@ function txSig = modulation(modType, modOrder, txSig, trainingSymbols)
     %fvtool(txFilter,'impulse');
 
     % Pass the signal through the txFilter
-    txSig = txFilter(txSig);
+    %txSig = txFilter(txSig);
     %trainingSymbols = txFilter(trainingSymbols);
     
     %% Define Channel Impairments
@@ -81,7 +81,7 @@ function txSig = modulation(modType, modOrder, txSig, trainingSymbols)
         'AveragePathGains',[0, -3, -3]);
 
     %Pass the signal through the fading channel
-    txSig = rayChan(txSig);
+    %txSig = rayChan(txSig);
     %trainingSymbols = rayChan(trainingSymbols);
 
     % Additive White Gaussian Noise
@@ -97,7 +97,7 @@ function txSig = modulation(modType, modOrder, txSig, trainingSymbols)
         'DecimationFactor',bps);
 
     % Pass signal into rxFilter
-    txSig = rxFilter(txSig);
+    %txSig = rxFilter(txSig);
     %trainingSymbols = rxFilter(trainingSymbols);
     
     %% Equalization
@@ -112,7 +112,7 @@ function txSig = modulation(modType, modOrder, txSig, trainingSymbols)
     eq = comm.LinearEqualizer;
     eq.ReferenceTap = 1;
     mxStep = maxstep(eq,txSig);
-    [txSig,err,weights] = eq(txSig,tx);
+    %[txSig,err,weights] = eq(txSig,tx);
     
     %[txSig,err,weights] = eqdfe(txSig,tx);
     %z = qamdemod(txSig,M)
@@ -199,13 +199,13 @@ function populatesampleData(num_of_frames)
         M = 4;
         signal = generateSignal(M, symPerFrame);
         txSig = modulation('QAM', M, signal, trainingSymbols_4qam);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
+        [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(txSig);
         groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
         
         % 4-PSK
         modType = '4-PSK'; 
         txSig = modulation('PSK', 4, signal, trainingSymbols_4psk);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
+        [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(txSig);
         groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
         
         % 8-QAM
@@ -213,13 +213,13 @@ function populatesampleData(num_of_frames)
         M = 8;
         signal = generateSignal(M, symPerFrame);
         txSig = modulation('QAM', 8, signal, trainingSymbols_8qam);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
+        [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(txSig);
         groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
         
         % 8-PSK
         modType = '8-PSK'; 
         txSig = modulation('PSK', 8, signal, trainingSymbols_8psk);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
+        [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(txSig);
         groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
         
         % 16-QAM
@@ -227,13 +227,13 @@ function populatesampleData(num_of_frames)
         M = 16;
         signal = generateSignal(M, symPerFrame);
         txSig = modulation('QAM', 16, signal, trainingSymbols_16qam);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
-        groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
+        [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(txSig);
+       groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
                         
         % 16-PSK
         modType = '16-PSK'; 
         txSig = modulation('PSK', 16, signal, trainingSymbols_16psk);
-        [f1 f2 f3 f4 f5,f6,f7,f8] = feature_extraction(txSig);
+        [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(txSig);
         groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
     end
     saveToFile();
@@ -253,6 +253,9 @@ function showStatistics()
     % classification model from the full data set.
     %boxplot(sampleData.gamma_max,sampleData.mod_type)
     %boxplot(sampleData.delta_aa,sampleData.mod_type)
+    %boxplot(sampleData.delta_a,sampleData.mod_type)
+    %boxplot(sampleData.delta_ap,sampleData.mod_type)
+    %boxplot(sampleData.delta_dp,sampleData.mod_type)
     %boxplot(sampleData.kurtosis,sampleData.mod_type)
     %boxplot(sampleData.C_20,sampleData.mod_type)
     boxplot(sampleData.C_40,sampleData.mod_type)
