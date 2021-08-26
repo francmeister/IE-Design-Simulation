@@ -21,7 +21,7 @@ function [f1 f2 f3 f4 f5] = feature_extraction(rxSig)
     
     %% High order cumulant features
     C_20 = sum(rxSig.^2)/N;
-    C_40 = sum(rxSig.^4)/N - C_20;
+    C_40 = sum(rxSig.^4)/N - 3*C_20;
     f4 = C_20;
     f5 = C_40;
 end

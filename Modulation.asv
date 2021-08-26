@@ -12,7 +12,7 @@ symPerFrame = 1024;
 %populatesampleData(2)
 %showStatistics()
 
-M = 16;
+M = 4;
 cpts = qammod(0:M-1,M);
 constDiag = comm.ConstellationDiagram(...
         'ReferenceConstellation',cpts, ...
@@ -20,7 +20,7 @@ constDiag = comm.ConstellationDiagram(...
         'YLimits',[-4 4]);
 
 txSig = generateSignal(M, symPerFrame);  
-trainingSymbols_4qam =  qammod(randi([0 M-1],symPerFrame,1),M);
+trainingSymbols_4qam =  qammod(randi([0 3],symPerFrame,1),4);
 txSig = modulation('QAM', M, txSig, trainingSymbols_4qam);
 constDiag(txSig);
 
@@ -38,7 +38,7 @@ function txSig = modulation(modType, modOrder, txSig, trainingSymbols)
     
     %% Number of bits per frame
     bitsPerFrame = symPerFrame*bps;
-    x = txSig;
+    
     %% Modulate Signal
     if modType == 'QAM'
          txSig = qammod(txSig,M);
@@ -78,12 +78,12 @@ function txSig = modulation(modType, modOrder, txSig, trainingSymbols)
         'AveragePathGains',[0, -3, -3]);
 
     %Pass the signal through the fading channel
-    txSig = rayChan(txSig);
+    %txSig = rayChan(txSig);
     %trainingSymbols = rayChan(trainingSymbols);
 
     % Additive White Gaussian Noise
     SNR = 15; % Will be varied
-    txSig = awgn(txSig, SNR, 'measured');
+    %txSig = awgn(txSig, SNR);
     %trainingSymbols = awgn(trainingSymbols,SNR);
 
     %% Pulse Shaping Rx Filter
@@ -107,11 +107,10 @@ function txSig = modulation(modType, modOrder, txSig, trainingSymbols)
     eq = comm.LinearEqualizer;
     eq.ReferenceTap = 1;
     mxStep = maxstep(eq,txSig);
-    [txSig,err,weights] = eq(txSig,tx);
+    [y,err,weights] = eq(txSig,tx);
     
-    %[txSig,err,weights] = eqdfe(txSig,tx);
-    z = qamdemod(txSig,M)
-    [num,rt] = symerr(x,z)
+    %txSig = y;%eqdfe(txSig,tx);
+    [num,rt] = symerr(tx,txSig)
 end
 %% Feature Extraction
 

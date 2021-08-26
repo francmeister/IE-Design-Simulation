@@ -10,10 +10,10 @@ histogram(traindata.mod_type)
 % features you have that can distinguish different classes, the more likely you are to be able to build an accurate 
 % classification model from the full data set.
 boxplot(traindata.gamma_max,traindata.mod_type)
-boxplot(traindata.delta_aa,traindata.mod_type)
-boxplot(traindata.kurtosis,traindata.mod_type)
-boxplot(traindata.C_20,traindata.mod_type)
-boxplot(traindata.C_40,traindata.mod_type)
+%boxplot(traindata.delta_aa,traindata.mod_type)
+%boxplot(traindata.kurtosis,traindata.mod_type)
+%boxplot(traindata.C_20,traindata.mod_type)
+%boxplot(traindata.C_40,traindata.mod_type)
 
 %Use the command classificationLearner to open the Classification Learner app.
 %Select traindata as the data to use.
