@@ -11,21 +11,21 @@ C_40 = [];
 mod_type = {};
 
 %% Define number of symbols per frame  
-symPerFrame = 1024;
-populatesampleData(40)
+%symPerFrame = 1024;
+%populatesampleData(200)
 showStatistics()
 
-%M = 16;
-%cpts = qammod(0:M-1,M);
-%constDiag = comm.ConstellationDiagram(...
-%        'ReferenceConstellation',cpts, ...
-%        'XLimits',[-4 4], ...
-%        'YLimits',[-4 4]);
-
-%txSig = generateSignal(M, symPerFrame);  
-%trainingSymbols_4qam =  qammod(randi([0 M-1],symPerFrame,1),M);
-%txSig = modulation('QAM', M, txSig, trainingSymbols_4qam);
-%constDiag(txSig);
+% M = 16;
+% cpts = qammod(0:M-1,M);
+% constDiag = comm.ConstellationDiagram(...
+%         'ReferenceConstellation',cpts, ...
+%         'XLimits',[-4 4], ...
+%         'YLimits',[-4 4]);
+% 
+% txSig = generateSignal(M, symPerFrame);  
+% trainingSymbols_4qam =  qammod(randi([0 M-1],symPerFrame,1),M);
+% txSig = modulation('QAM', M, txSig, trainingSymbols_4qam);
+% constDiag(txSig);
 
 function txSig = generateSignal(modOrder, symPerFrame)
     M = modOrder;
@@ -158,7 +158,7 @@ function [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(rxSig)
     
     %% High order cumulant features
     C_20 = sum(rxSig.^2)/N;
-    C_40 = sum(rxSig.^4)/N - 3*C_20;
+    C_40 = sum(rxSig.^4)/N - C_20;
     f7 = abs(C_20);
     f8 = abs(C_40);
 end
@@ -228,13 +228,21 @@ function populatesampleData(num_of_frames)
         signal = generateSignal(M, symPerFrame);
         txSig = modulation('QAM', 16, signal, trainingSymbols_16qam);
         [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(txSig);
-       groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
+        groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
                         
         % 16-PSK
         modType = '16-PSK'; 
         txSig = modulation('PSK', 16, signal, trainingSymbols_16psk);
         [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(txSig);
         groupsampleData(f1,f2,f3,f4,f5,f6,f7,f8,modType);
+        
+        % 64-PSK
+        modType = '64-PSK'; 
+        txSig = modulation('PSK', 64, signal, trainingSymbols_16psk);
+        [f1 f2 f3 f4 f5 f6 f7 f8] = feature_extraction(txSig);
+        %groupsampleData(f1,f2,f3,f4,f5,modType);
+        
+       
     end
     saveToFile();
 end
@@ -258,5 +266,6 @@ function showStatistics()
     %boxplot(sampleData.delta_dp,sampleData.mod_type)
     %boxplot(sampleData.kurtosis,sampleData.mod_type)
     %boxplot(sampleData.C_20,sampleData.mod_type)
-    boxplot(sampleData.C_40,sampleData.mod_type)
+    %boxplot(sampleData.C_40,sampleData.mod_type)
+    
 end
